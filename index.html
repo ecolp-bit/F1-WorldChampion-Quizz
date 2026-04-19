@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Speed Quiz - World Champions</title>
+    <title>F1 Speed Quiz - Elite Champions Only</title>
     <style>
         :root {
             --f1-red: #e10600;
@@ -50,14 +50,13 @@
         th { background: var(--f1-black); color: white; }
 
         .hidden { display: none; }
-        .scrollable { max-height: 300px; overflow-y: auto; margin: 15px 0; border: 1px solid #eee; padding: 10px; text-align: left; }
+        .scrollable { max-height: 250px; overflow-y: auto; margin: 15px 0; border: 1px solid #eee; padding: 10px; text-align: left; }
         
         input[type="text"] { padding: 12px; width: 80%; border: 2px solid var(--f1-black); border-radius: 5px; margin-bottom: 15px; font-size: 1rem; }
 
-        .recap-line { margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+        .recap-line { margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
         .txt-correct { color: var(--correct-green); font-weight: bold; }
         .txt-wrong { color: var(--wrong-red); font-weight: bold; }
-        .arrow { margin: 0 5px; color: #999; }
     </style>
 </head>
 <body>
@@ -69,58 +68,80 @@
             <span>Score: <span id="live-score">0</span></span>
         </div>
         <div id="timer-bar-container"><div id="timer-bar"></div></div>
-        <h2 id="question-text">Warming up tires...</h2>
+        <h2 id="question-text">Loading Grid...</h2>
         <div class="options-grid" id="options-container"></div>
     </div>
 
     <div id="name-input-side" class="hidden">
-        <h2>New Personal Best! 🏆</h2>
+        <h2>New Record! 🏆</h2>
         <p>Score: <span id="temp-score" style="font-weight:bold; color:var(--f1-red);"></span> pts.</p>
         <p>Enter your driver name:</p>
-        <input type="text" id="player-name" placeholder="Driver Name" maxlength="15">
+        <input type="text" id="player-name" placeholder="Your Name" maxlength="15">
         <br>
         <button onclick="saveAndShowLeaderboard()" style="background: var(--f1-red); color: white; border: none; padding: 12px 30px; cursor: pointer; border-radius: 5px; font-weight: bold;">SUBMIT</button>
     </div>
 
     <div id="result-side" class="hidden">
-        <h2>Championship Standings 🏁</h2>
+        <h2>World Standings 🏁</h2>
         <div class="total-score-display" id="final-score-val">0</div>
         
         <table>
-            <thead>
-                <tr>
-                    <th>Pos</th>
-                    <th>Driver</th>
-                    <th>Score</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Pos</th><th>Driver</th><th>Score</th></tr></thead>
             <tbody id="leaderboard-body"></tbody>
         </table>
-
         <div class="scrollable" id="recap-list"></div>
-
-        <button onclick="location.reload()" style="margin-top:10px; background: var(--f1-black); color:white; border:none; padding: 15px 25px; cursor:pointer; border-radius:5px; width: 100%; font-weight: bold;">RESTART SEASON</button>
+        <button onclick="location.reload()" style="margin-top:10px; background: var(--f1-black); color:white; border:none; padding: 15px 25px; cursor:pointer; border-radius:5px; width: 100%; font-weight: bold;">RESTART</button>
     </div>
 </div>
 
 <script>
-    // Database: World Champions Only
+    // 100% WORLD CHAMPIONS DATABASE (1980 - 2024)
     const fullDatabase = [
         { year: 1980, correct: "Alan Jones", options: ["Alan Jones", "Nelson Piquet", "Jody Scheckter", "Mario Andretti"] },
-        { year: 1982, correct: "Keke Rosberg", options: ["Keke Rosberg", "Niki Lauda", "Alan Jones", "Nelson Piquet"] },
-        { year: 1985, correct: "Alain Prost", options: ["Alain Prost", "Niki Lauda", "Nelson Piquet", "Keke Rosberg"] },
+        { year: 1981, correct: "Nelson Piquet", options: ["Nelson Piquet", "Alan Jones", "Keke Rosberg", "Mario Andretti"] },
+        { year: 1982, correct: "Keke Rosberg", options: ["Keke Rosberg", "Niki Lauda", "Alain Prost", "Mario Andretti"] },
+        { year: 1983, correct: "Nelson Piquet", options: ["Nelson Piquet", "Alain Prost", "Niki Lauda", "Alan Jones"] },
+        { year: 1984, correct: "Niki Lauda", options: ["Niki Lauda", "Alain Prost", "Keke Rosberg", "Nelson Piquet"] },
+        { year: 1985, correct: "Alain Prost", options: ["Alain Prost", "Niki Lauda", "Keke Rosberg", "Ayrton Senna"] },
+        { year: 1986, correct: "Alain Prost", options: ["Alain Prost", "Nigel Mansell", "Nelson Piquet", "Keke Rosberg"] },
+        { year: 1987, correct: "Nelson Piquet", options: ["Nelson Piquet", "Nigel Mansell", "Ayrton Senna", "Alain Prost"] },
         { year: 1988, correct: "Ayrton Senna", options: ["Ayrton Senna", "Alain Prost", "Nelson Piquet", "Nigel Mansell"] },
-        { year: 1992, correct: "Nigel Mansell", options: ["Nigel Mansell", "Ayrton Senna", "Alain Prost", "Michael Schumacher"] },
+        { year: 1989, correct: "Alain Prost", options: ["Alain Prost", "Ayrton Senna", "Nigel Mansell", "Nelson Piquet"] },
+        { year: 1990, correct: "Ayrton Senna", options: ["Ayrton Senna", "Alain Prost", "Nelson Piquet", "Nigel Mansell"] },
+        { year: 1991, correct: "Ayrton Senna", options: ["Ayrton Senna", "Nigel Mansell", "Nelson Piquet", "Alain Prost"] },
+        { year: 1992, correct: "Nigel Mansell", options: ["Nigel Mansell", "Michael Schumacher", "Ayrton Senna", "Alain Prost"] },
+        { year: 1993, correct: "Alain Prost", options: ["Alain Prost", "Ayrton Senna", "Damon Hill", "Michael Schumacher"] },
         { year: 1994, correct: "Michael Schumacher", options: ["Michael Schumacher", "Damon Hill", "Mika Häkkinen", "Nigel Mansell"] },
+        { year: 1995, correct: "Michael Schumacher", options: ["Michael Schumacher", "Damon Hill", "Mika Häkkinen", "Nigel Mansell"] },
+        { year: 1996, correct: "Damon Hill", options: ["Damon Hill", "Jacques Villeneuve", "Michael Schumacher", "Mika Häkkinen"] },
         { year: 1997, correct: "Jacques Villeneuve", options: ["Jacques Villeneuve", "Michael Schumacher", "Damon Hill", "Mika Häkkinen"] },
-        { year: 2000, correct: "Michael Schumacher", options: ["Michael Schumacher", "Mika Häkkinen", "Jacques Villeneuve", "Alain Prost"] },
-        { year: 2005, correct: "Fernando Alonso", options: ["Fernando Alonso", "Michael Schumacher", "Kimi Räikkönen", "Jenson Button"] },
+        { year: 1998, correct: "Mika Häkkinen", options: ["Mika Häkkinen", "Michael Schumacher", "Damon Hill", "Jacques Villeneuve"] },
+        { year: 1999, correct: "Mika Häkkinen", options: ["Mika Häkkinen", "Michael Schumacher", "Damon Hill", "Jacques Villeneuve"] },
+        { year: 2000, correct: "Michael Schumacher", options: ["Michael Schumacher", "Mika Häkkinen", "Damon Hill", "Alain Prost"] },
+        { year: 2001, correct: "Michael Schumacher", options: ["Michael Schumacher", "David Coulthard", "Mika Häkkinen", "Jacques Villeneuve"] },
+        { year: 2002, correct: "Michael Schumacher", options: ["Michael Schumacher", "Kimi Räikkönen", "Juan Pablo Montoya", "Jacques Villeneuve"] },
+        { year: 2003, correct: "Michael Schumacher", options: ["Michael Schumacher", "Kimi Räikkönen", "Fernando Alonso", "Jenson Button"] },
+        { year: 2004, correct: "Michael Schumacher", options: ["Michael Schumacher", "Jenson Button", "Fernando Alonso", "Kimi Räikkönen"] },
+        { year: 2005, correct: "Fernando Alonso", options: ["Fernando Alonso", "Kimi Räikkönen", "Michael Schumacher", "Jenson Button"] },
+        { year: 2006, correct: "Fernando Alonso", options: ["Fernando Alonso", "Michael Schumacher", "Kimi Räikkönen", "Jenson Button"] },
         { year: 2007, correct: "Kimi Räikkönen", options: ["Kimi Räikkönen", "Fernando Alonso", "Lewis Hamilton", "Michael Schumacher"] },
-        { year: 2009, correct: "Jenson Button", options: ["Jenson Button", "Lewis Hamilton", "Sebastian Vettel", "Fernando Alonso"] },
-        { year: 2012, correct: "Sebastian Vettel", options: ["Sebastian Vettel", "Fernando Alonso", "Lewis Hamilton", "Kimi Räikkönen"] },
+        { year: 2008, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Kimi Räikkönen", "Fernando Alonso", "Michael Schumacher"] },
+        { year: 2009, correct: "Jenson Button", options: ["Jenson Button", "Sebastian Vettel", "Lewis Hamilton", "Fernando Alonso"] },
+        { year: 2010, correct: "Sebastian Vettel", options: ["Sebastian Vettel", "Fernando Alonso", "Lewis Hamilton", "Jenson Button"] },
+        { year: 2011, correct: "Sebastian Vettel", options: ["Sebastian Vettel", "Jenson Button", "Lewis Hamilton", "Fernando Alonso"] },
+        { year: 2012, correct: "Sebastian Vettel", options: ["Sebastian Vettel", "Fernando Alonso", "Kimi Räikkönen", "Lewis Hamilton"] },
+        { year: 2013, correct: "Sebastian Vettel", options: ["Sebastian Vettel", "Fernando Alonso", "Lewis Hamilton", "Nico Rosberg"] },
+        { year: 2014, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Nico Rosberg", "Sebastian Vettel", "Jenson Button"] },
+        { year: 2015, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Nico Rosberg", "Sebastian Vettel", "Kimi Räikkönen"] },
         { year: 2016, correct: "Nico Rosberg", options: ["Nico Rosberg", "Lewis Hamilton", "Sebastian Vettel", "Kimi Räikkönen"] },
+        { year: 2017, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Sebastian Vettel", "Kimi Räikkönen", "Nico Rosberg"] },
+        { year: 2018, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Sebastian Vettel", "Kimi Räikkönen", "Max Verstappen"] },
+        { year: 2019, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Sebastian Vettel", "Max Verstappen", "Kimi Räikkönen"] },
+        { year: 2020, correct: "Lewis Hamilton", options: ["Lewis Hamilton", "Max Verstappen", "Sebastian Vettel", "Kimi Räikkönen"] },
         { year: 2021, correct: "Max Verstappen", options: ["Max Verstappen", "Lewis Hamilton", "Sebastian Vettel", "Fernando Alonso"] },
-        { year: 2023, correct: "Max Verstappen", options: ["Max Verstappen", "Lewis Hamilton", "Fernando Alonso", "Jenson Button"] }
+        { year: 2022, correct: "Max Verstappen", options: ["Max Verstappen", "Lewis Hamilton", "Sebastian Vettel", "Fernando Alonso"] },
+        { year: 2023, correct: "Max Verstappen", options: ["Max Verstappen", "Lewis Hamilton", "Fernando Alonso", "Jenson Button"] },
+        { year: 2024, correct: "Max Verstappen", options: ["Max Verstappen", "Lewis Hamilton", "Fernando Alonso", "Sebastian Vettel"] }
     ];
 
     let selectedQuestions = [], playerAnswers = [], currentIdx = 0, totalScore = 0;
@@ -160,44 +181,28 @@
         clearInterval(timerInterval);
         const data = selectedQuestions[currentIdx];
         let points = 0, isRight = (choice === data.correct);
-        
-        if (isRight) {
-            points = Math.round((timeLeft / 10) * 1000);
-            totalScore += points;
-            document.getElementById('live-score').innerText = totalScore;
-        }
-
-        playerAnswers.push({ 
-            year: data.year, 
-            choice: choice, 
-            correct: data.correct, 
-            isRight: isRight, 
-            points: points,
-            timeout: (choice === null)
-        });
-
+        if (isRight) { points = Math.round((timeLeft / 10) * 1000); totalScore += points; }
+        document.getElementById('live-score').innerText = totalScore;
+        playerAnswers.push({ year: data.year, choice, correct: data.correct, isRight, points, timeout: !choice });
         currentIdx++;
         setTimeout(loadQuestion, 400);
     }
 
     function checkHighscore() {
-        const scores = JSON.parse(localStorage.getItem('f1_leaderboard_en')) || [];
+        const scores = JSON.parse(localStorage.getItem('f1_leaderboard_final')) || [];
         document.getElementById('game-side').classList.add('hidden');
         if (totalScore > 0 && (scores.length < 10 || totalScore > scores[scores.length - 1].score)) {
             document.getElementById('name-input-side').classList.remove('hidden');
             document.getElementById('temp-score').innerText = totalScore;
-        } else {
-            showLeaderboard();
-        }
+        } else { showLeaderboard(); }
     }
 
     function saveAndShowLeaderboard() {
         const name = document.getElementById('player-name').value.trim() || "Anonymous";
-        let scores = JSON.parse(localStorage.getItem('f1_leaderboard_en')) || [];
+        let scores = JSON.parse(localStorage.getItem('f1_leaderboard_final')) || [];
         scores.push({ name, score: totalScore });
         scores.sort((a, b) => b.score - a.score);
-        scores = scores.slice(0, 10);
-        localStorage.setItem('f1_leaderboard_en', JSON.stringify(scores));
+        localStorage.setItem('f1_leaderboard_final', JSON.stringify(scores.slice(0, 10)));
         document.getElementById('name-input-side').classList.add('hidden');
         showLeaderboard();
     }
@@ -205,29 +210,15 @@
     function showLeaderboard() {
         document.getElementById('result-side').classList.remove('hidden');
         document.getElementById('final-score-val').innerText = totalScore + " pts";
-        
-        const scores = JSON.parse(localStorage.getItem('f1_leaderboard_en')) || [];
+        const scores = JSON.parse(localStorage.getItem('f1_leaderboard_final')) || [];
         const tbody = document.getElementById('leaderboard-body');
-        tbody.innerHTML = '';
-        scores.forEach((s, i) => {
-            tbody.innerHTML += `<tr><td>${i+1}</td><td>${s.name}</td><td>${s.score}</td></tr>`;
-        });
-
-        const recap = document.getElementById('recap-list');
-        recap.innerHTML = '<strong>Telemetry Analysis:</strong><br><br>';
+        tbody.innerHTML = scores.map((s, i) => `<tr><td>${i+1}</td><td>${s.name}</td><td>${s.score}</td></tr>`).join('');
         
-        playerAnswers.forEach(ans => {
-            let line = `<div class="recap-line"><strong>${ans.year}:</strong> `;
-            if (ans.timeout) {
-                line += `<span class="txt-wrong">TIME OUT</span> <span class="arrow">➔</span> <span class="txt-correct">${ans.correct}</span>`;
-            } else if (ans.isRight) {
-                line += `<span class="txt-correct">✅ ${ans.choice}</span> (+${ans.points} pts)`;
-            } else {
-                line += `<span class="txt-wrong">❌ ${ans.choice}</span> <span class="arrow">➔</span> <span class="txt-correct">${ans.correct}</span>`;
-            }
-            line += `</div>`;
-            recap.innerHTML += line;
-        });
+        const recap = document.getElementById('recap-list');
+        recap.innerHTML = '<strong>Telemetry:</strong><br><br>' + playerAnswers.map(ans => {
+            let res = ans.timeout ? '<span class="txt-wrong">TIMEOUT</span>' : (ans.isRight ? `<span class="txt-correct">✅ ${ans.choice}</span>` : `<span class="txt-wrong">❌ ${ans.choice}</span>`);
+            return `<div class="recap-line"><b>${ans.year}:</b> ${res} ${ans.isRight ? '' : '➔ <b>' + ans.correct + '</b>'}</div>`;
+        }).join('');
     }
 
     initGame();
